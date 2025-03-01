@@ -1,0 +1,3 @@
+infrastructure/.terraform/
+infrastructure/terraform.tfstate*
+lambda/failover_lambda/virtualenv/
