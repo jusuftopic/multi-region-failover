@@ -1,0 +1,1 @@
+failover_dynamodb_global_table_name = "FailoverGlobalTable"
