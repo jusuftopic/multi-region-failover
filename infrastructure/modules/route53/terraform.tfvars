@@ -1,0 +1,1 @@
+domain_name = "failover.example.com"
