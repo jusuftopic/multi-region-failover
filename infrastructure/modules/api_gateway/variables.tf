@@ -3,12 +3,12 @@ variable "api_gateway_name" {
   type        = string
 }
 
-variable "failover_lambda_invoke_arn" {
+variable "lambda_invoke_arn" {
   description = "The ARN of the Lambda function to be invoked by the API Gateway"
   type        = string
 }
 
-variable "failover_lambda_function_name" {
+variable "lambda_function_name" {
     description = "The name of the Lambda function to be invoked by the API Gateway"
     type        = string
 }
@@ -25,4 +25,14 @@ variable "user_pool_client_id" {
 variable "user_pool_endpoint" {
   description = "The endpoint of the Cognito User Pool"
   type = string
+}
+
+variable "cognito_authorizer_name" {
+    description = "The name of the Cognito Authorizer"
+    type = string
+}
+
+variable "environment" {
+  description = "The environment for the resources (e.g., dev, prod)"
+  type        = string
 }

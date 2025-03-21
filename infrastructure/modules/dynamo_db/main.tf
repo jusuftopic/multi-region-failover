@@ -23,4 +23,9 @@ resource "aws_dynamodb_table" "failover_table" {
     name = "last_checked"
     type = "S"
   }
+
+  tags = {
+    Name = var.table_name
+    Environment = var.environment
+  }
 }

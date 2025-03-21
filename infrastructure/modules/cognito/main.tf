@@ -11,6 +11,10 @@ resource "aws_cognito_user_pool" "user_pool" {
   }
 
   auto_verified_attributes = ["email"]
+
+  tags = {
+    Environment = var.environment
+  }
 }
 
 # Create a Cognito User Pool Client
@@ -24,6 +28,6 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
   allowed_oauth_flows_user_pool_client = true
 
   # Enable the client to generate a secret
-  generate_secret = false
+  generate_secret = true
 
 }

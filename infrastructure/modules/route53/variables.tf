@@ -22,3 +22,17 @@ variable "standby_gateway_zone_id" {
     description = "The zone ID of the standby API gateway"
     type        = string
 }
+
+variable "environment" {
+    description = "The environment for the resources (e.g., dev, prod)"
+    type        = string
+}
+
+variable "regions" {
+    description = "Mapping of primary and standby API gateway details"
+    type = map(object({
+        gateway_domain_name = string
+        gateway_zone_id     = string
+        health_type         = string
+    }))
+}
