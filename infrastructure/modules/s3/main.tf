@@ -1,10 +1,14 @@
 # Create resource for s3 bucket to store the lambda zip file
 resource "aws_s3_bucket" "lambda_zip_bucket" {
-  bucket = "failover-lambda-zip-bucket"
+  bucket = var.lambda_bucket_name
+
+    tags = {
+      Name = var.lambda_bucket_name
+    }
 }
 
 # Enable versioning for the S3 bucket
-resource "aws_s3_bucket_versioning" "failover_terraform_state_bucket_versioning" {
+resource "aws_s3_bucket_versioning" "lambda_zip_bucket_versioning" {
   bucket = aws_s3_bucket.lambda_zip_bucket.id
 
   versioning_configuration {
@@ -13,7 +17,7 @@ resource "aws_s3_bucket_versioning" "failover_terraform_state_bucket_versioning"
 }
 
 # Enable server-side encryption for the S3 bucket
-resource "aws_s3_bucket_server_side_encryption_configuration" "failover_terraform_state_bucket_encryption" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "lambda_zip_bucket_encryption" {
   bucket = aws_s3_bucket.lambda_zip_bucket.id
 
   rule {
@@ -34,7 +38,7 @@ resource "aws_s3_bucket_public_access_block" "lambda_zip_bucket_public_access_bl
 }
 
 # Deny all public access through a bucket policy
-resource "aws_s3_bucket_policy" "lambda_zip_bucket_policy" {
+resource "aws_s3_bucket_policy" "lambda_zip_bucket_security_policy" {
   bucket = aws_s3_bucket.lambda_zip_bucket.id
 
   policy = jsonencode({
@@ -48,6 +52,7 @@ resource "aws_s3_bucket_policy" "lambda_zip_bucket_policy" {
           "arn:aws:s3:::${aws_s3_bucket.lambda_zip_bucket.id}",
           "arn:aws:s3:::${aws_s3_bucket.lambda_zip_bucket.id}/*"
         ],
+
         Condition = {
           Bool = {
             "aws:SecureTransport": "false"
@@ -56,4 +61,27 @@ resource "aws_s3_bucket_policy" "lambda_zip_bucket_policy" {
       }
     ]
   })
+}
+
+
+# Lifecycle rule to delete old versions of the Lambda ZIP files
+resource "aws_s3_bucket_lifecycle_configuration" "lambda_zip_bucket_lifecycle" {
+  bucket = aws_s3_bucket.lambda_zip_bucket.id
+
+  rule {
+    id     = "lambda_zip_cleanup"
+    status = "Enabled"
+
+    filter {
+      prefix = "lambda-zips/"
+    }
+
+    expiration {
+      days = 30 # Delete old versions after 30 days
+    }
+
+    noncurrent_version_expiration {
+      days = 7 # Delete old versions after 7 days
+    }
+  }
 }

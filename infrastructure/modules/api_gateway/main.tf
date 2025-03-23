@@ -8,11 +8,33 @@ resource "aws_apigatewayv2_api" "failover_api_gateway" {
   }
 }
 
+# Log group for the API Gateway
+resource "aws_cloudwatch_log_group" "api_gw_logs" {
+  name              = "/aws/apigateway/${var.api_gateway_name}"
+  retention_in_days = 30
+}
+
 resource "aws_apigatewayv2_stage" "failover_api_gateway_stage" {
   api_id = aws_apigatewayv2_api.failover_api_gateway.id
   name   = var.api_gateway_stage_name
   auto_deploy = true
 
+  default_route_settings {
+    throttling_rate_limit = var.throttling_rate_limit
+    throttling_burst_limit = var.throttling_burst_limit
+  }
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gw_logs.arn
+    format          = jsonencode({
+      requestId   = "$context.requestId"
+      sourceIp    = "$context.identity.sourceIp"
+      routeKey    = "$context.routeKey"
+      status      = "$context.status"
+      protocol    = "$context.protocol"
+      responseLatency = "$context.responseLatency"
+    })
+  }
     tags = {
         Environment = var.environment
     }
@@ -53,5 +75,5 @@ resource "aws_lambda_permission" "failover_api_gateway_lambda_permission" {
   function_name = var.lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
-  source_arn = "${aws_apigatewayv2_api.failover_api_gateway.execution_arn}/*/*/*"
+  source_arn = "${aws_apigatewayv2_api.failover_api_gateway.execution_arn}/${aws_apigatewayv2_stage.failover_api_gateway_stage.name}/GET/health-check"
 }

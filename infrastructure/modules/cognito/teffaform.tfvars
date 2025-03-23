@@ -1,2 +1,2 @@
-failover-user-pool = "failover-user-pool"
-failover-user-pool-client = "failover-user-pool-client"
+failover_user_pool = "failover-user-pool"
+failover_user_pool_client = "failover-user-pool-client"

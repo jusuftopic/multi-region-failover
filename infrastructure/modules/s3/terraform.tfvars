@@ -1,0 +1,1 @@
+lambda_bucket_name = "failover-lambda-zip-bucket"

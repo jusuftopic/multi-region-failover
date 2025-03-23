@@ -19,9 +19,13 @@ resource "aws_dynamodb_table" "failover_table" {
     type = "S"
   }
 
-  attribute {
+  ttl {
     name = "last_checked"
     type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
   }
 
   tags = {

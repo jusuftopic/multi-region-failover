@@ -16,7 +16,7 @@ resource "aws_iam_role" "failover_lambda_role" {
   })
 }
 
-# Define an IAM policy for the Lambda function
+# Define an IAM policy for the Lambda function and CloudWatch Logs
 resource "aws_iam_policy" "failover_lambda_policy" {
   name = "failover_lambda_policy"
 
@@ -30,6 +30,15 @@ resource "aws_iam_policy" "failover_lambda_policy" {
           "dynamodb:GetItem"
         ],
         Resource = var.failover_table_arn
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "arn:aws:logs:*:*:*"
       }
     ]
   })
@@ -51,11 +60,13 @@ resource "archive_file" "failover_lambda_zip" {
 # Upload the ZIP archive to an S3 bucket
 resource "aws_s3_object" "lambda_zip" {
   bucket = var.failover_lambda_zip_bucket_id
-  key    = "lambda.zip"
+  key    = "lambda-${formatdate("YYYYMMDDhhmmss", timestamp())}.zip" # Add timestamp to avoid overwriting
   source = archive_file.failover_lambda_zip.output_path
 
   # The etag is a hash of the object's data. If the data changes, the etag changes.
   etag = filemd5(archive_file.failover_lambda_zip.output_path)
+
+  server_side_encryption = "AES256" # Ensure encryption at object level
 }
 
 # Define the Lambda function
@@ -81,4 +92,9 @@ resource "aws_lambda_function" "failover_health_check_lambda" {
       FAILOVER_TABLE_NAME = var.failover_table_name
     }
   }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.failover_lambda_policy_attachment,
+    aws_s3_object.lambda_zip
+  ]
 }

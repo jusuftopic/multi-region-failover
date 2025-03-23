@@ -36,3 +36,13 @@ variable "environment" {
   description = "The environment for the resources (e.g., dev, prod)"
   type        = string
 }
+
+variable "throttling_rate_limit" {
+  description = "The rate limit for the API Gateway stage"
+  type        = number
+}
+
+variable "throttling_burst_limit" {
+  description = "The burst limit for the API Gateway stage"
+  type        = number
+}
